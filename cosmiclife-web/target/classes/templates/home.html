@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en" 
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:tiles="http://www.thymeleaf.org"> 
+<head>  
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">  </meta>
+	<title>Cosmic Life</title>
+	<link href="https://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet"></link>
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.4/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.5/css/bootstrap.min.css}"
+          rel="stylesheet" media="screen"/>
+
+    <script src="http://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js"
+            th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"></script>
+            
+    <script th:src="@{/webjars/bootstrap/3.3.5/js/bootstrap.min.js}"></script>
+
+    <link href="../../static/css/spring-core.css"
+          th:href="@{/css/spring-core.css}" rel="stylesheet" media="screen"/>
+          	
+	<script src="../../static/js/object.js" th:src="@{/js/object.js}"></script>
+	<script src="../../static/js/canvasmap.js" th:src="@{/js/canvasmap.js}"></script>
+	<style>
+		body {
+		    font-family: TallFilmFine, sans-serif;
+		    font-size: 14px;
+		}
+		
+		input, button, a{
+			font-family: TallFilmFine, sans-serif !important;
+		    font-size: 25px !important;
+		}
+		
+		.sidenav {
+		    height: 100%;
+		    width: 0;
+		    position: fixed;
+		    z-index: 1;
+		    top: 0;
+		    left: 0;
+		    background-color: #111;
+		    overflow-x: hidden;
+		    transition: 0.5s;
+		    padding-top: 60px;
+		}
+		
+		.sidenav a {
+		    padding: 8px 8px 8px 32px;
+		    text-decoration: none;
+		    font-size: 25px;
+		    color: #818181;
+		    display: block;
+		    transition: 0.3s;
+		}
+		
+		.sidenav a:hover, .offcanvas a:focus{
+		    color: #f1f1f1;
+		}
+		
+		.sidenav .closebtn {
+		    position: absolute;
+		    top: 0;
+		    right: 25px;
+		    font-size: 36px;
+		    margin-left: 50px;
+		}
+		
+		#main {
+		    transition: margin-left .5s;
+		    padding: 16px;
+		}
+		
+		@media screen and (max-height: 450px) {
+		  .sidenav {padding-top: 15px;}
+		  .sidenav a {font-size: 18px;}
+		}
+		
+		.modal-body {
+		    max-height:400px; 
+		    overflow-y: auto;
+		}
+			.displayMap{
+		position: relative;
+		top: 0;
+		margin: auto;
+		width: 960px;
+		height: 500px;
+		overflow: hidden;
+		left: 0px;
+	}
+	
+	#slider{
+		position: absolute;
+		top: 60px;
+		left: 18px;
+		width: 23px;
+		height: 184px;
+		cursor: pointer;
+		background:url(img/zoom.png) -19px 0;      	
+	}
+	
+	#sliderKnob
+	{
+		position: absolute;
+		left: 18px;
+		top: 208px;
+		width: 23px;
+		height: 12px;
+		background:url(img/zoom.png) 0 -185px;
+	}
+	
+	#navigation
+	{
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		width: 59px;
+		height: 59px;
+		cursor: pointer;
+		background:url(img/navigation.png);
+	}
+	canvas { 
+		border:1px solid #ccc; 
+		width:496px;
+		height:701px;
+	}
+	</style>
+	<script>
+		$(document).ready(function(){
+			$("#buildMapButton").click(function(){
+				initPage();
+			});
+
+			$("#blackButton").click(function(){
+				$("#constColor").val("rgb(0,0,0)");
+				$("#startsColor").val("0,0,0");
+				$("#constNamefontColor").val("rgb(0,0,0)");
+			});
+
+			$("#whiteButton").click(function(){
+				$("#constColor").val("rgb(255,255,255)");
+				$("#startsColor").val("255,255,255");
+				$("#constNamefontColor").val("rgb(255,255,255)");
+			});
+
+			$("#greyButton").click(function(){
+				$("#constColor").val("rgb(87,86,85)");
+				$("#startsColor").val("87,86,85");
+				$("#constNamefontColor").val("rgb(87,86,85)");
+			});
+
+			$("#goldButton").click(function(){
+				$("#constColor").val("rgb(194,156,66)");
+				$("#startsColor").val("194,156,66");
+				$("#constNamefontColor").val("rgb(194,156,66)");
+			});
+
+			$("#greyLightButton").click(function(){
+				$("#constColor").val("rgb(211,211,211)");
+				$("#startsColor").val("211,211,211");
+				$("#constNamefontColor").val("rgb(211,211,211)");
+			});
+
+			$("#kidsButton").click(function(){
+				kids = !kids;
+				if(kids){
+					$("#onofkids").text("OFF");
+				}else{
+					$("#onofkids").text("ON");
+				}
+			});
+			
+			var button = document.getElementById('cropImageLink');
+			button.addEventListener('click', function (e) {
+				var canvas = document.getElementById('map');
+				var dataURL = canvas.toDataURL('image/png');
+				
+				var img = document.createElement('img');
+				img.src = dataURL;
+		
+				var a = document.createElement('a');
+				a.setAttribute("download", "cosmicLife.png");
+				a.setAttribute("href", dataURL);
+				a.appendChild(img);
+		
+				var w = open();
+				w.document.title = 'Export Image';
+				w.document.body.innerHTML = 'Left-click on the image to save it.';
+				w.document.body.appendChild(a);
+				a.click();
+				//button.href = dataURL;
+				//document.getElementById('canvasImg').src = dataURL;
+			});
+		});
+	</script>
+</head>  
+<body>  
+		
+		<div class="container">
+	
+		<div class="jumbotron">
+			<h1>CosmicLife</h1>
+			<div class="form-group">
+				<input class="form-control" id="time" type="date" placeholder="Fecha" required="required"></input>
+				<input class="form-control" id="location" type="text" placeholder="Ubicacion" required="required"></input>
+				<input class="form-control" id="backgroundColor" type="text" placeholder="Color Fondo (black)"></input>
+				<input class="form-control" id="haloColor" type="text" placeholder="Color halo rgb(0, 0, 141)"></input>
+				<input class="form-control" id="constColor" type="text" placeholder="Color Constelaciones (blue)"></input>
+				<input class="form-control" id="startsColor" type="text" placeholder="Color Estrellas rgb(255, 255, 255)"></input>
+				<input class="form-control" id="constNamefontColor" type="text" placeholder="Color Nombre Constelaciones (yellow)"></input>
+				<input class="form-control" id="constNamefontStyle" type="text" placeholder="Estilo letra nombre constelaciones (bold 30px Arial)"></input>
+				<button id="blackButton" type = "button" class="btn btn-default" >Perfil Negro</button>
+				<button id="whiteButton" type = "button" class="btn btn-default" >Perfil Blanco</button>
+				<button id="greyButton" type = "button" class="btn btn-default" >Perfil Gris</button>
+				<button id="greyLightButton" type = "button" class="btn btn-default" >Perfil Gris Claro</button>
+				<button id="goldButton" type = "button" class="btn btn-default" >Perfil Dorado</button>
+				<button id="kidsButton" type = "button" class="btn btn-default" >Kids <span id="onofkids">ON</span></button> <br/>
+				<button id="buildMapButton" type = "button" class="btn btn-default" >Crear Mapa</button> 
+				<a id="cropImageLink" class="btn btn-default" download="cosmicLife.png" >Crear Imagen HD!
+				</a>
+			</div>
+		</div>
+		
+		<div id="displayMap" > <!-- 4960 , 7015 -->
+			<canvas id="map" width="9920" height="14030">
+			</canvas>
+			<div style="display:none;" id="slider" onmousedown="sliderClick(event)"></div>
+			<div style="display:none;top: 195.4px;" id="sliderKnob" onmousedown="pressSliderKnob(event)"></div>
+			<div style="display:none;" id="navigation" onclick="pressNavigation(event)" visible="false"></div>
+		</div>
+		
+		<div style="font-size: small; left: 10px; position: relative;">        
+			<input type="hidden" name="hdClientUTC" id="hdClientUTC" value="-300"> </input>
+			<input type="hidden" name="HiddenFieldRequest" id="HiddenFieldRequest"> </input>
+			<input type="hidden" name="HiddenFieldRotation" id="HiddenFieldRotation"> </input>
+			<input type="hidden" name="HiddenFieldZoom" id="HiddenFieldZoom" value="1"> </input>
+			<input type="hidden" name="HiddenFieldTime" id="HiddenFieldTime" value="2017,8,10,18,2,3"> </input>
+			<input type="hidden" name="HiddenFieldX" id="HiddenFieldX"> </input>
+			<input type="hidden" name="HiddenFieldY" id="HiddenFieldY"> </input>
+			<input type="hidden" name="HiddenFieldLatitude" id="HiddenFieldLatitude" value="47.62"> </input>
+			<input type="hidden" name="HiddenFieldLongitude" id="HiddenFieldLongitude" value="-122.33"> </input>
+			<input type="hidden" name="HiddenFieldMapWidth" id="HiddenFieldMapWidth" value="960"> </input>
+			<input type="hidden" name="HiddenFieldMapHeight" id="HiddenFieldMapHeight" value="500"> </input>
+			<input type="hidden" name="HiddenFieldTelrad" id="HiddenFieldTelrad"> </input>
+			<input type="hidden" name="HiddenFieldAzGrid" id="HiddenFieldAzGrid"> </input>
+			<input type="hidden" name="HiddenFieldConstNames" id="HiddenFieldConstNames"> </input>
+			<input type="hidden" name="HiddenFieldConstLines" id="HiddenFieldConstLines"> </input>
+			<input type="hidden" name="HiddenFieldFlipHorizontally" id="HiddenFieldFlipHorizontally"> </input>
+			<input type="hidden" name="HiddenFieldFlipVertically" id="HiddenFieldFlipVertically"> </input>            
+		</div>
+		<img id="canvasImg" alt="Right click to save me!"></img>
+	</div>
+        
+</body>  
+</html> 
